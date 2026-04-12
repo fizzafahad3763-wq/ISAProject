@@ -14,12 +14,13 @@ public class Member {
     private int itemsDonated;
     private ArrayList<Item> borrowedItems;
     
-}
-
-public int getMaxBorrowableItems(){
+    public int getMaxBorrowableItems(){
     return Math.min(5, itemsDonated);
-}
-
-public boolean canBorrowMore(){
+    }
+    
+    public boolean canBorrowMore(){
     return borrowedItems.size() < getMaxBorrowableItems();
+    }
+    
+    
 }
