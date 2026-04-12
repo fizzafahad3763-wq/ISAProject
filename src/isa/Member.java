@@ -5,6 +5,7 @@ package isa;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 
 public class Member {
@@ -13,7 +14,7 @@ public class Member {
     private String postalAddress;
     private String email;
     private int itemsDonated;
-    private ArrayList<Item> borrowedItems;
+    private List<Item> borrowedItems;
     
     public Member(String name, String postalAddress, String email, int itemsDonated) {
         this.name = name;
@@ -51,8 +52,8 @@ public class Member {
         return itemsDonated;
     }
     
-    public ArrayList<Item> getBorrowedItems() {
-        return Collections.unmodifiableArrayList(borrowedItems);
+    public List<Item> getBorrowedItems() {
+        return Collections.unmodifiableList(borrowedItems);
     }
     
     
