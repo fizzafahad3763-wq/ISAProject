@@ -82,4 +82,24 @@ public class Member {
     public boolean returnItem(Item item) {
         return borrowedItems.remove(item);
     }
+    
+    @Override
+    public boolean equals(Object o){
+        if (this == o) return true;
+        if (!(o instanceof Member)) return false;
+        Member other = (Member) o;
+        return email != null && email.equalsIgnoreCase(other.email);
+    }
+    
+    @Override
+    public int hashCode(){
+        return email == null ? 0 : email.toLowerCase().hashCode();
+        
+    }
+    
+    @Override
+    public String toString(){
+        return name + " <" + email + ">";
+    }
+    
 }
