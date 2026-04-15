@@ -48,7 +48,7 @@ public class Member {
         this.email = email;
     }
     
-    public int getItmesDonated() {
+    public int getItemsDonated() {
         return itemsDonated;
     }
     
