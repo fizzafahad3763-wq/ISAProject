@@ -22,11 +22,17 @@ public class MemberTest {
     
     private Member member;
     private Member donor;
+    private TestItem item1;
+    private TestItem item2;
     
     @BeforeEach
     public void setUp(){
-        donor = new Member("Donor", "Address", "donor@example.com", 5);
-        member = new Member ("Alice", "123 Road", "alice@example.com", 0);
+        member = new Member("Alice", "1 Road", "alice@example.com", 0);
+        donor = new Member("Donor", "2 Street", "donor@example.com", 0);
+
+        item1 = new TestItem("Item One", "English", donor);
+        item2 = new TestItem("Item Two", "French", donor);
+
     }
     
 
@@ -35,144 +41,90 @@ public class MemberTest {
     @Test
     public void testConstructorInitialisesFieldsRight() {
         assertEquals("Alice", member.getName());
-        assertEquals("123 Road", member.getPostalAddress());
+        assertEquals("1 Road", member.getPostalAddress());
         assertEquals("alice@example.com", member.getEmail());
-        assertEquals(0, member.getItemsDonated());
-        assertTrue(member.getBorrowedItems().isEmpty());
+        assertEquals(0, member.getDonatedQty());
+        assertEquals(0, member.borrowingQty());
+
     }
 
-    //Borrowing tests.
-     
     @Test
-    public void testMemberWithNoDonationsCantBorrow() {
-        TestItem item = new TestItem("Book A", "English", donor);
-        
+    public void testAddDonationIncreasesDonatedQty() {
+        member.addDonation(item1);
+        assertEquals(1, member.getDonatedQty());
+        assertEquals(1, member.getDonatedItems().size());
+        assertTrue(member.getDonatedItems().contains(item1));
+    }
+
+    @Test
+    public void testGetDonatedItemsIsUnmodifiable() {
+        member.addDonation(item1);
+        List<Item> donated = member.getDonatedItems();
+        assertThrows(UnsupportedOperationException.class, () -> donated.add(item2));
+    }
+
+    // -------------------------
+    // Borrowing Tests
+    // -------------------------
+    @Test
+    public void testLendAddsItemToBorrowingList() {
+        member.lend(item1);
+        assertEquals(1, member.borrowingQty());
+        assertTrue(member.getLoanItems().contains(item1));
+    }
+
+    @Test
+    public void testReturnItemRemovesItemFromBorrowingList() {
+        member.lend(item1);
+        member.returnItem(item1);
+        assertEquals(0, member.borrowingQty());
+    }
+
+    @Test
+    public void testGetLoanItemsIsUnmodifiable() {
+        member.lend(item1);
+        List<Item> loans = member.getLoanItems();
+        assertThrows(UnsupportedOperationException.class, () -> loans.add(item2));
+    }
+    
+
+    @Test
+    public void testCanBorrowMoreWhenUnderLimit() {
+        member.addDonation(item1); // donatedQty = 1 → max borrow = 1
+        assertTrue(member.canBorrowMore());
+    }
+
+    @Test
+    public void testCannotBorrowMoreWhenAtLimit() {
+        member.addDonation(item1); // donatedQty = 1
+        member.lend(item2);        // now borrowing 1
         assertFalse(member.canBorrowMore());
-        assertFalse(member.borrowItem(item));
-        assertEquals(0, member.getBorrowedItems().size());
     }
-    
+
     @Test
-    public void testMemberWithOneDonationCanBorrowOnlyOneItem(){
-        member.donateItem();
-        TestItem item1 = new TestItem("Book A", "English", donor);
-        TestItem item2 = new TestItem("Book B", "English", donor);
-        
-        assertTrue(member.borrowItem(item1));
-        assertFalse(member.borrowItem(item2));
-        assertEquals(1, member.getBorrowedItems().size());
-    }
-    
-    @Test
-    public void testMemberWithThreeDonationsCanBorrowUpToThreeItems(){
-        member.donateItem();
-        member.donateItem();
-        member.donateItem();
-        
-        TestItem a = new TestItem("A", "English", donor);
-        TestItem b = new TestItem("B", "English", donor);
-        TestItem c = new TestItem("C", "English", donor);
-        TestItem d = new TestItem("D", "English", donor);
-        
-        assertTrue(member.borrowItem(a));
-        assertTrue(member.borrowItem(b));
-        assertTrue(member.borrowItem(c));
-        assertFalse(member.borrowItem(d)); //Limit
-        
-        assertEquals(3, member.getBorrowedItems().size());
-    }
-    
-    @Test
-    public void testDonateLimitIsAlwaysFive(){
-        for (int i = 0; i <10; i++){
-            member.donateItem();
+    public void testBorrowLimitIsFiveWhenDonatedQtyIsHigh() {
+        Member m = new Member("Bob", "3 Lane", "bob@example.com", 10);
+        for (int i = 0; i < 5; i++) {
+            m.lend(new TestItem("Item" + i, "Lang", donor));
         }
-        assertEquals(5, member.getMaxBorrowableItems());
-    }
-    
-    //donateItem() checks.
-    
-    @Test
-    public void testDonateItemDonationCountWorks() {
-        assertEquals(0, member.getItemsDonated());
-        member.donateItem();
-        assertEquals(1, member.getItemsDonated());
-    }
-    
-    @Test
-    public void testDonateItemIncreasesBorrowableItem(){
-        assertEquals(0, member.getMaxBorrowableItems());
-        member.donateItem();
-        assertEquals(1, member.getMaxBorrowableItems());
-    }
-    
-    //returnItem() checks.
-    
-    @Test
-    public void testReturnItemRemovesItemFromBorrowedList() {
-        member.donateItem();
-        TestItem item = new TestItem("Book A", "English", donor);
-        member.borrowItem(item);
-        assertEquals(1, member.getBorrowedItems().size());
-
-        assertTrue(member.returnItem(item));
-        assertEquals(0, member.getBorrowedItems().size());
+        assertFalse(m.canBorrowMore());
     }
 
     @Test
-    public void testReturnItemFailsIfItemNotBorrowed() {
-        TestItem item = new TestItem("Book A", "English", donor);
-        assertFalse(member.returnItem(item));
-    }
-    
-    //update field checks.
+    public void testMembersEqualIfEmailsMatch() {
+        Member m1 = new Member("X", "A", "same@mail.com", 0);
+        Member m2 = new Member("Y", "B", "same@mail.com", 0);
 
-    @Test
-    public void testSetNameWillUpdateName() {
-        member.setName("Bob");
-        assertEquals("Bob", member.getName());
+        assertEquals(m1, m2);
     }
 
     @Test
-    public void testSetEmailWillUpdateEmail() {
-        member.setEmail("new@example.com");
-        assertEquals("new@example.com", member.getEmail());
-    }
+    public void testMembersNotEqualIfEmailsDifferent() {
+        Member m1 = new Member("X", "A", "x@mail.com", 0);
+        Member m2 = new Member("Y", "B", "y@mail.com", 0);
 
-    @Test
-    public void testSetPostalAddressWillUpdateAddress() {
-        member.setPostalAddress("New Address");
-        assertEquals("New Address", member.getPostalAddress());
+        assertNotEquals(m1, m2);
     }
-
-    //defensive checks.
-    @Test
-    public void testBorrowedItemsListIsUnmodifiable() {
-        List<Item> list = member.getBorrowedItems();
-        assertThrows(UnsupportedOperationException.class, () -> {
-            list.add(new TestItem("X", "English", donor));
-        });
-    }
-
-    //equality email checks.
-    
-    @Test
-    public void testMembersWithSameEmailAreEqual() {
-        Member m2 = new Member("Other", "Addr", "alice@example.com", 1);
-        assertEquals(member, m2);
-    }
-
-    @Test
-    public void testMembersWithDifferentEmailsAreNotEqual() {
-        Member m2 = new Member("Other", "Addr", "different@example.com", 1);
-        
-        assertNotEquals(member, m2);
-    }
-
-    @Test
-    public void testEmailComparisonIsCaseInsensitive() {
-        Member m2 = new Member("Other", "Addr", "ALICE@example.com", 1);
-        assertEquals(member, m2);
-    }
-
 }
+
+

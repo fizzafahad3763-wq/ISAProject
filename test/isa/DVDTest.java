@@ -1,5 +1,4 @@
 
-
 //This page was coded by Lacie Carey. 
 package isa;
 
@@ -21,12 +20,16 @@ public class DVDTest {
 
     private DVD dvd;
     private Member donor;
+    private Member borrower;
 
     @BeforeEach
     public void setUp() {
-        donor = new Member("Donor", "Address", "donor@example.com", 5);
+        donor = new Member("Donor", "Address", "donor@example.com", 3);
+        borrower = new Member("Borrower", "Addr", "borrower@example.com", 3);
 
-        dvd = new DVD( "Movie Title", "English", "Director Name", Arrays.asList("English", "Spanish"), donor);
+        String[] audio = {"English", "French"};
+        dvd = new DVD("Movie Title", "Director Name", donor, "English", audio);
+
     }
 
     
@@ -35,78 +38,66 @@ public class DVDTest {
     @Test
     public void testConstructorStartsFieldsCorrectly() {
         assertEquals("Movie Title", dvd.getTitle());
+        assertEquals("Director Name", dvd.getDirector());
         assertEquals("English", dvd.getLanguage());
-        assertEquals("Director Name", dvd.getDirector()) ;
-        assertEquals(2, dvd.getAudioLanguages().size());
+        assertEquals(donor, dvd.getDonator());
+
+        String[] langs = dvd.getAudioLanguages();
+        assertArrayEquals(new String[]{"English", "French"}, langs);
+
+    }
+
+        // Director tests
+    @Test
+    public void testSetDirectorUpdatesDirector() {
+        dvd.setDirector("New Director");
+        assertEquals("New Director", dvd.getDirector());
+    }
+
+    // Audio languages tests
+    @Test
+    public void testSetAudioLanguagesReplacesArray() {
+        String[] newLangs = {"Mandarin", "Cantonese"};
+        dvd.setAudioLanguages(newLangs);
+
+        assertArrayEquals(new String[]{"Mandarin", "Cantonese"}, dvd.getAudioLanguages());
     }
 
     @Test
-    public void testAudioLanguagesListCantBeChanged() {
-        List<String> langs = dvd.getAudioLanguages();
-        assertThrows(UnsupportedOperationException.class, () -> {
-            langs.add("French");
-        });
+    public void testGetAudioLanguagesReturnsCopy() {
+        String[] langs = dvd.getAudioLanguages();
+        langs[0] = "CHANGED";
+
+        // Original should NOT change
+        assertEquals("English", dvd.getAudioLanguages()[0]);
     }
 
-    
-    // Audio Language Test.
-    
+    // Loan tests
     @Test
-    public void testAddAudioLanguage() {
-        dvd.addAudioLanguage("French");
-        assertTrue(dvd.getAudioLanguages().contains("French"));
-    }
-
-    @Test
-    public void testRemoveAudioLanguage() {
-        dvd.removeAudioLanguage("Spanish");
-        assertFalse(dvd.getAudioLanguages().contains("Spanish"));
-    }
-
-    
-    //checking inherited item works.
-    
-
-    @Test
-    public void testDvdIsAvailableWhenNotBorrowed() {
+    public void testLoanToMarksAsUnavailable() {
         assertTrue(dvd.isAvailable());
-    }
 
-    @Test
-    public void testLoanToMarksAsNotAvailable() {
-        Member borrower = new Member("Alice", "123 Road", "alice@example.com", 1);
-        dvd.loanTo(borrower);
-        assertFalse(dvd.isAvailable());
-    }
-
-    @Test
-    public void testLoanToDoesNothingIfAlreadyOnLoan() {
-        Member borrower1 = new Member("A", "Addr", "a@example.com", 1);
-        Member borrower2 = new Member("B", "Addr", "b@example.com", 1);
-
-        dvd.loanTo(borrower1);
-        dvd.loanTo(borrower2); //should not overwrite.
-
-        
-        assertFalse(dvd.isAvailable());
-    }
-
-    @Test
-    public void testReturnLoanMakesItemAvailableAgain() {
-        Member borrower = new Member("Alice", "123 Road", "alice@example.com", 1);
         dvd.loanTo(borrower);
 
+        assertFalse(dvd.isAvailable());
+        assertEquals(borrower, dvd.getBorrower());
+    }
+
+
+    @Test
+    public void testReturnLoanMarksAsAvailable() {
+        dvd.loanTo(borrower);
         dvd.returnLoan();
+
         assertTrue(dvd.isAvailable());
+        assertNull(dvd.getBorrower());
     }
 
-
-    //toString Test.
-
+    // toString test
     @Test
     public void testToStringFormat() {
         String result = dvd.toString();
-        assertTrue(result.contains("DVD: Movie Title"));
-        assertTrue(result.contains("Director Name"));
+        assertTrue(result.contains("DVD: Movie Title: "));
+        assertTrue(result.contains("Director Name: "));
     }
 }

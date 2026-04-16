@@ -11,17 +11,19 @@ import java.util.List;
 public class Member {
     
     private String name;
-    private String postalAddress;
+    private String address;
     private String email;
-    private int itemsDonated;
-    private List<Item> borrowedItems;
+    private int donatedQty;
+    private List<Item> donatedItems;
+    private List<Item> borrowing;
     
-    public Member(String name, String postalAddress, String email, int itemsDonated) {
+    public Member(String name, String address, String email, int donatedQty) {
         this.name = name;
-        this.postalAddress = postalAddress;
+        this.address = address;
         this.email = email;
-        this.itemsDonated = itemsDonated;
-        this.borrowedItems = new ArrayList<>();
+        this.donatedQty = donatedQty;
+        this.donatedItems = new ArrayList<>();
+        this.borrowing = new ArrayList<>();
     }
     
     public String getName(){
@@ -33,11 +35,11 @@ public class Member {
     }
     
     public String getPostalAddress(){
-        return postalAddress;
+        return address;
     }
     
     public void setPostalAddress(String postalAddress) {
-        this.postalAddress = postalAddress;
+        this.address = address;
     }
     
     public String getEmail() {
@@ -48,58 +50,66 @@ public class Member {
         this.email = email;
     }
     
-    public int getItemsDonated() {
-        return itemsDonated;
+    public int getDonatedQty() {
+        return donatedQty;
     }
     
-    public List<Item> getBorrowedItems() {
-        return Collections.unmodifiableList(borrowedItems);
+    public void addDonation(Item item) {
+        donatedItems.add(item);
+        donatedQty++;
     }
-    
-    
-    
-    
-    public int getMaxBorrowableItems(){
-        return Math.min(5, itemsDonated);
+
+    public List<Item> getDonatedItems() {
+        return Collections.unmodifiableList(donatedItems);
     }
+
     
-    public boolean canBorrowMore(){
-        return borrowedItems.size() < getMaxBorrowableItems();
-    }
     
-    public void donateItem() {
-        itemsDonated++;
+    public int borrowingQty() {
+        return borrowing.size();
     }
+
     
-    public boolean borrowItem(Item item){
-        if(!canBorrowMore()){
-            return false;
-        }
-        borrowedItems.add(item);
-        return true;       
+    public List<Item> getLoanItems() {
+        return Collections.unmodifiableList(borrowing);
     }
+
     
-    public boolean returnItem(Item item) {
-        return borrowedItems.remove(item);
+    public void lend(Item item) {
+        borrowing.add(item);
     }
+
+    public void returnItem(Item item) {
+        borrowing.remove(item);
+    }
+
+    
+    //borrowing limit logic.
+    
+    public boolean canBorrowMore() {
+        int max = Math.min(5, donatedQty);
+        return borrowing.size() < max;
+    }
+
+    
     
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Member)) return false;
         Member other = (Member) o;
         return email != null && email.equalsIgnoreCase(other.email);
     }
-    
+
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return email == null ? 0 : email.toLowerCase().hashCode();
-        
     }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return name + " <" + email + ">";
     }
-    
 }
+
+    

@@ -4,43 +4,44 @@ This Page was coded by Lacie Carey.
 package isa;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 
 public class DVD extends Item {
     private String director;
-    private List<String> audioLanguages;
+    private String[] audioLanguages;
     
-    public DVD (String title, String caseLanguage, String director, List<String> audioLanguages, Member donor){
-        super(title, caseLanguage, donor);
+    public DVD (String title, String director, Member donatedBy, String language, String[] audioLanguages){
+        super(title, language, donatedBy);
         this.director = director;
-        this.audioLanguages = new ArrayList<>(audioLanguages);
+        this.audioLanguages = new String[audioLanguages.length];
+        for (int i = 0; i < audioLanguages.length; i++) {
+            this.audioLanguages[i] = audioLanguages[i];
+}
+
     }
     
-    public String getDirector(){
+    public String getDirector() {
         return director;
     }
-    
-    public void setDirector(String director){
+
+    public void setDirector(String director) {
         this.director = director;
     }
-    
-    public List<String> getAudioLanguages(){
-        return Collections.unmodifiableList(audioLanguages);
+
+    public String[] getAudioLanguages() {
+        return Arrays.copyOf(audioLanguages, audioLanguages.length);
     }
-    
-    public void addAudioLanguage(String language){
-        audioLanguages.add(language);
+
+    public void setAudioLanguages(String[] languages) {
+        this.audioLanguages = Arrays.copyOf(languages, languages.length);
     }
-    
-    public void removeAudioLanguage(String language){
-        audioLanguages.remove(language);
-    }
-    
+
     @Override
-    public String toString(){
+    public String toString() {
         return "DVD: " + getTitle() + " (" + director + ")";
     }
-    
 }
+
