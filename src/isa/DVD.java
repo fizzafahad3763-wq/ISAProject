@@ -3,17 +3,19 @@ This Page was coded by Lacie Carey.
  */
 package isa;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 
-public abstract class DVD extends Item {
+public class DVD extends Item {
     private String director;
     private List<String> audioLanguages;
     
     public DVD (String title, String caseLanguage, String director, List<String> audioLanguages, Member donor){
         super(title, caseLanguage, donor);
         this.director = director;
+        this.audioLanguages = new ArrayList<>(audioLanguages);
     }
     
     public String getDirector(){
@@ -24,11 +26,11 @@ public abstract class DVD extends Item {
         this.director = director;
     }
     
-    public List<String> getAudioLanguage(){
+    public List<String> getAudioLanguages(){
         return Collections.unmodifiableList(audioLanguages);
     }
     
-    public void addAudioLangauge(String language){
+    public void addAudioLanguage(String language){
         audioLanguages.add(language);
     }
     
